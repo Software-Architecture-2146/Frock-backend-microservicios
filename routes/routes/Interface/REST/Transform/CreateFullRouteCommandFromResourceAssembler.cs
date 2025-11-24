@@ -16,7 +16,8 @@ namespace Frock_backend.routes.Interface.REST.Transform
                     schedule.EndTime,
                     schedule.DayOfWeek,
                     schedule.Enabled
-                )).ToList()
+                )).ToList(),
+                resource.CompanyId
             );
     }
 }

@@ -7,7 +7,8 @@ using Frock_backend.shared.Domain.Services;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Net.Mime;
-
+using MassTransit;
+using Frock.Contracts;
 namespace Frock_backend.transport_Company.Interfaces.REST
 {
     [ApiController]
@@ -17,7 +18,8 @@ namespace Frock_backend.transport_Company.Interfaces.REST
     public class CompaniesController(
         ICompanyCommandService commandService, 
         ICompanyQueryService queryService,
-        ICloudinaryService cloudinaryService) : ControllerBase
+        ICloudinaryService cloudinaryService,
+        IPublishEndpoint publishEndpoint): ControllerBase
     {
         /// <summary>
         /// Creates a new company with optional logo upload.
@@ -55,6 +57,13 @@ namespace Frock_backend.transport_Company.Interfaces.REST
                 var company = await commandService.Handle(createCompanyCommand);
 
                 if (company is null) return BadRequest("Could not create company");
+
+                await publishEndpoint.Publish<ITransportCompanyCreated>(new
+                {
+                    Id = Guid.NewGuid(),
+                    Name = company.Name,
+                    CreatedAt= DateTime.UtcNow
+                });
 
                 var companyResource = CompanyResourceFromEntityAssembler.ToResourceFromEntity(company);
                 return CreatedAtAction(nameof(GetCompanyById), new { id = company.Id }, companyResource);

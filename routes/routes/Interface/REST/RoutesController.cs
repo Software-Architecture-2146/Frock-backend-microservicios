@@ -82,7 +82,7 @@ namespace Frock_backend.routes.Interface.REST
             )]
         [SwaggerResponse(200, "The routes were retrieved", typeof(IEnumerable<RouteAggregateResource>))]
         [SwaggerResponse(404, "No routes found")]
-        public async Task<ActionResult<IEnumerable<RouteAggregateResource>>> GetAllRoutes(int FkIdCompany)
+        public async Task<ActionResult<IEnumerable<RouteAggregateResource>>> GetAllRoutes(Guid FkIdCompany)
         {
             GetAllRoutesByFkCompanyIdQuery query = new GetAllRoutesByFkCompanyIdQuery(FkIdCompany);
             var routes = await routeQueryService.Handle(query); // Assuming this method exists in the service

@@ -1,3 +1,6 @@
+
+using Frock.Contracts;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Frock_backend.shared.Infrastructure.Persistences.EFC.Configuration;
@@ -116,7 +119,7 @@ builder.Services.AddCors(options =>
 // Cloudinary Configuration
 builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("Cloudinary"));
 builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
-
+builder.Services.AddRabbitMqBus();
 var app = builder.Build();
 
 app.UseCors();
@@ -138,8 +141,9 @@ app.UseSwagger(c =>
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "API V1");
-    c.RoutePrefix = string.Empty; // Opcional: para que Swagger sea la p�gina ra�z
+    // c.RoutePrefix = string.Empty; // Opcional: para que Swagger sea la p�gina ra�z
     c.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.None);
+    c.DocumentTitle = "Transport Company API";
 });
 
 app.UseHttpsRedirection();

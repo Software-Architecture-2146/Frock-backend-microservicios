@@ -1,11 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "RDagobDJJLI=",
+  "dgSpecHash": "bqArtcXLBuE=",
   "success": true,
-  "projectFilePath": "D:\\microservicios\\Frock-backend-microservicioss\\suscriptions\\suscriptions.csproj",
+  "projectFilePath": "D:\\Ejercicios_JetBrains\\TF_FAS_Backend_Microservicio\\suscriptions\\suscriptions.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\USUARIO\\.nuget\\packages\\microsoft.aspnetcore.openapi\\9.0.9\\microsoft.aspnetcore.openapi.9.0.9.nupkg.sha512",
-    "C:\\Users\\USUARIO\\.nuget\\packages\\microsoft.openapi\\1.6.17\\microsoft.openapi.1.6.17.nupkg.sha512"
+    "C:\\Users\\abrah\\.nuget\\packages\\microsoft.aspnetcore.openapi\\9.0.9\\microsoft.aspnetcore.openapi.9.0.9.nupkg.sha512",
+    "C:\\Users\\abrah\\.nuget\\packages\\microsoft.openapi\\1.6.17\\microsoft.openapi.1.6.17.nupkg.sha512"
   ],
   "logs": []
 }

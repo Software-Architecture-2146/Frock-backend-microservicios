@@ -8,6 +8,8 @@ namespace Frock_backend.shared.Infrastructure.Persistences.EFC.Configuration
 {
     public class AppDbContext(DbContextOptions options) : DbContext(options)
     {
+        public DbSet<Company> Companies { get; set; }
+        public DbSet<Stop> Stops { get; set; }
         protected override void OnConfiguring(DbContextOptionsBuilder builder)
         {
             builder.AddCreatedUpdatedInterceptor();
@@ -18,6 +20,13 @@ namespace Frock_backend.shared.Infrastructure.Persistences.EFC.Configuration
         {
             base.OnModelCreating(builder);
 
+            builder.Entity<Company>().ToTable("Companies");
+            builder.Entity<Company>().HasKey(p => p.Id);
+            
+            // CONFIGURACIÓN STOP
+            builder.Entity<Stop>().ToTable("Stops");
+            builder.Entity<Stop>().HasKey(p => p.Id);
+            builder.Entity<Stop>().Property(p => p.Id).ValueGeneratedNever();
             // ROUTE
             builder.Entity<RouteAggregate>(b =>
             {

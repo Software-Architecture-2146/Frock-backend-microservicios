@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "D:\\microservicios\\Frock-backend-microservicioss\\ApiGateway\\ApiGateway.csproj": {}
+    "D:\\Ejercicios_JetBrains\\TF_FAS_Backend_Microservicio\\ApiGateway\\ApiGateway.csproj": {}
   },
   "projects": {
-    "D:\\microservicios\\Frock-backend-microservicioss\\ApiGateway\\ApiGateway.csproj": {
+    "D:\\Ejercicios_JetBrains\\TF_FAS_Backend_Microservicio\\ApiGateway\\ApiGateway.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\microservicios\\Frock-backend-microservicioss\\ApiGateway\\ApiGateway.csproj",
+        "projectUniqueName": "D:\\Ejercicios_JetBrains\\TF_FAS_Backend_Microservicio\\ApiGateway\\ApiGateway.csproj",
         "projectName": "ApiGateway",
-        "projectPath": "D:\\microservicios\\Frock-backend-microservicioss\\ApiGateway\\ApiGateway.csproj",
-        "packagesPath": "C:\\Users\\USUARIO\\.nuget\\packages\\",
-        "outputPath": "D:\\microservicios\\Frock-backend-microservicioss\\ApiGateway\\obj\\",
+        "projectPath": "D:\\Ejercicios_JetBrains\\TF_FAS_Backend_Microservicio\\ApiGateway\\ApiGateway.csproj",
+        "packagesPath": "C:\\Users\\abrah\\.nuget\\packages\\",
+        "outputPath": "D:\\Ejercicios_JetBrains\\TF_FAS_Backend_Microservicio\\ApiGateway\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+          "D:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\USUARIO\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\abrah\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -26,6 +26,7 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -74,7 +75,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.308/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

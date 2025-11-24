@@ -1,3 +1,6 @@
+using Frock.Contracts;
+using routes.Consumers; 
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
@@ -11,9 +14,12 @@ using Frock_backend.routes.Infrastructure.Repositories;
 using Frock_backend.routes.Domain.Service;
 using Frock_backend.routes.Application.Internal.CommandServices;
 using Frock_backend.routes.Application.Internal.QueryServices;
+using Frock_backend.routes.Consumers;
 using Frock_backend.shared.Domain.Services;
 using Frock_backend.shared.Infrastructure.Configuration;
 using Frock_backend.shared.Infrastructure.Services;
+using Frock_backend.routes.Domain.Repository;
+using Frock_backend.routes.Infrastructure.Repositories;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -106,6 +112,7 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
     builder.Services.AddScoped<IRouteRepository, RouteRepository>();
     builder.Services.AddScoped<IRouteCommandService, RouteCommandService>();
 builder.Services.AddScoped<IRouteQueryService, RouteQueryService>();
+builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
 //CORS
 builder.Services.AddCors(options =>
 {
@@ -120,6 +127,9 @@ builder.Services.AddCors(options =>
 // Cloudinary Configuration
 builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("Cloudinary"));
 builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
+
+// Le decimos a RabbitMQ que use este Consumidor para escuchar
+builder.Services.AddRabbitMqBus(typeof(TransportCompanyCreatedConsumer), typeof(StopCreatedConsumer));
 
 var app = builder.Build();
 
@@ -142,8 +152,9 @@ app.UseSwagger(c =>
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "API V1");
-    c.RoutePrefix = string.Empty; // Opcional: para que Swagger sea la p�gina ra�z
+    //c.RoutePrefix = string.Empty; // Opcional: para que Swagger sea la p�gina ra�z
     c.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.None);
+    c.DocumentTitle = "Routes API";
 });
 
 app.UseHttpsRedirection();

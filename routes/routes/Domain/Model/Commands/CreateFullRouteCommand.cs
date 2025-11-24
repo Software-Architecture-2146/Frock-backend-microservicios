@@ -7,6 +7,7 @@ namespace Frock_backend.routes.Domain.Model.Commands
         int Duration,
         int Frequency,
         List<int> StopsIds,
-        List<Schedule> Schedules
+        List<Schedule> Schedules,
+        Guid CompanyId
     );
 }

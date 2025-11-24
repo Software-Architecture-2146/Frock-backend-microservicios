@@ -2,6 +2,7 @@
 {
     public record CreateFullRouteResource
     (
+        Guid CompanyId,
         int Frequency,
         double Price,
         int Duration,

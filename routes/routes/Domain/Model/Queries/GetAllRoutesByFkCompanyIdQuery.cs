@@ -2,6 +2,6 @@
 {
     public record GetAllRoutesByFkCompanyIdQuery
     (
-        int FkCompanyId
+        Guid FkCompanyId
     );
 }

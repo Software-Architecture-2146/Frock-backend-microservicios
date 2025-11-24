@@ -12,6 +12,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiGateway", "ApiGateway\Ap
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "suscriptions", "suscriptions\suscriptions.csproj", "{3A744054-9442-4789-8379-AB9152CEBACE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Frock.Contracts", "Frock.Contracts\Frock.Contracts.csproj", "{B390B9D0-1D02-4311-947E-46682E02473B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,5 +44,9 @@ Global
 		{3A744054-9442-4789-8379-AB9152CEBACE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3A744054-9442-4789-8379-AB9152CEBACE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3A744054-9442-4789-8379-AB9152CEBACE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B390B9D0-1D02-4311-947E-46682E02473B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B390B9D0-1D02-4311-947E-46682E02473B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B390B9D0-1D02-4311-947E-46682E02473B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B390B9D0-1D02-4311-947E-46682E02473B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

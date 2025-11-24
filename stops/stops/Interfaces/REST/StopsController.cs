@@ -8,6 +8,9 @@ using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Net.Mime;
 
+using MassTransit;
+using Frock.Contracts;
+
 namespace Frock_backend.stops.Interfaces.REST
 {
     /// <summary>
@@ -20,10 +23,12 @@ namespace Frock_backend.stops.Interfaces.REST
     [Route("api/[controller]")]
     [Produces(MediaTypeNames.Application.Json)]
     [Tags("Stops")]
+
     public class StopsController(
         IStopCommandService stopCommandService, 
         IStopQueryService stopQueryService,
-        ICloudinaryService cloudinaryService) : ControllerBase
+        ICloudinaryService cloudinaryService,
+        IPublishEndpoint publishEndpoint) : ControllerBase
     {
         /// <summary>
         /// Creates a new stop with optional image upload.
@@ -74,6 +79,14 @@ namespace Frock_backend.stops.Interfaces.REST
                 var result = await stopCommandService.Handle(createStopCommand);
                 
                 if (result is null) return BadRequest("Could not create stop");
+                
+                await publishEndpoint.Publish<IStopCreated>(new
+                {
+                    Id = result.Id,          // El ID numérico que generó la base de datos
+                    Name = result.Name,      // El nombre de la parada
+                    Address = result.Address // La dirección
+                });
+                
                 
                 return CreatedAtAction(nameof(GetStopById), new { id = result.Id }, StopResourceFromEntityAssembler.ToResourceFromEntity(result));
             }
