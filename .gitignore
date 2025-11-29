@@ -19,7 +19,7 @@ x86/
 [Aa][Rr][Mm]64/
 bld/
 [Bb]in/
-[Oo]bj/s
+[Oo]bj/
 [Ll]og/
 [Ll]ogs/
 *.log

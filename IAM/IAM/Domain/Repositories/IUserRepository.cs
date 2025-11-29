@@ -14,8 +14,8 @@ public interface IUserRepository : IBaseRepository<User>
     Task<User?> FindByUsernameAsync(string username);
 
     Task<User?> FindByEmailAsync(string email);
-
     Task<bool> ExistsByEmail(string email);
+    Task<bool> ExistsByUsernameAsync(string username);
 
     /**
      * <summary>

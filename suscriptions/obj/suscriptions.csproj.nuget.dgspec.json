@@ -4,14 +4,14 @@
     "D:\\Ejercicios_JetBrains\\TF_FAS_Backend_Microservicio\\suscriptions\\suscriptions.csproj": {}
   },
   "projects": {
-    "D:\\Ejercicios_JetBrains\\TF_FAS_Backend_Microservicio\\suscriptions\\suscriptions.csproj": {
+    "D:\\Ejercicios_JetBrains\\TF_FAS_Backend_Microservicio\\Frock.Contracts\\Frock.Contracts.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Ejercicios_JetBrains\\TF_FAS_Backend_Microservicio\\suscriptions\\suscriptions.csproj",
-        "projectName": "suscriptions",
-        "projectPath": "D:\\Ejercicios_JetBrains\\TF_FAS_Backend_Microservicio\\suscriptions\\suscriptions.csproj",
+        "projectUniqueName": "D:\\Ejercicios_JetBrains\\TF_FAS_Backend_Microservicio\\Frock.Contracts\\Frock.Contracts.csproj",
+        "projectName": "Frock.Contracts",
+        "projectPath": "D:\\Ejercicios_JetBrains\\TF_FAS_Backend_Microservicio\\Frock.Contracts\\Frock.Contracts.csproj",
         "packagesPath": "C:\\Users\\abrah\\.nuget\\packages\\",
-        "outputPath": "D:\\Ejercicios_JetBrains\\TF_FAS_Backend_Microservicio\\suscriptions\\obj\\",
+        "outputPath": "D:\\Ejercicios_JetBrains\\TF_FAS_Backend_Microservicio\\Frock.Contracts\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -51,9 +51,109 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "dependencies": {
-            "Microsoft.AspNetCore.OpenApi": {
+            "MassTransit.RabbitMQ": {
+              "target": "Package",
+              "version": "[8.5.5, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.308/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "D:\\Ejercicios_JetBrains\\TF_FAS_Backend_Microservicio\\suscriptions\\suscriptions.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "D:\\Ejercicios_JetBrains\\TF_FAS_Backend_Microservicio\\suscriptions\\suscriptions.csproj",
+        "projectName": "suscriptions",
+        "projectPath": "D:\\Ejercicios_JetBrains\\TF_FAS_Backend_Microservicio\\suscriptions\\suscriptions.csproj",
+        "packagesPath": "C:\\Users\\abrah\\.nuget\\packages\\",
+        "outputPath": "D:\\Ejercicios_JetBrains\\TF_FAS_Backend_Microservicio\\suscriptions\\obj\\",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "D:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\abrah\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {
+              "D:\\Ejercicios_JetBrains\\TF_FAS_Backend_Microservicio\\Frock.Contracts\\Frock.Contracts.csproj": {
+                "projectPath": "D:\\Ejercicios_JetBrains\\TF_FAS_Backend_Microservicio\\Frock.Contracts\\Frock.Contracts.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "dependencies": {
+            "MassTransit.RabbitMQ": {
+              "target": "Package",
+              "version": "[8.5.5, )"
+            },
+            "Microsoft.EntityFrameworkCore": {
+              "target": "Package",
+              "version": "[9.0.11, )"
+            },
+            "Microsoft.EntityFrameworkCore.Relational": {
+              "target": "Package",
+              "version": "[9.0.11, )"
+            },
+            "Microsoft.OpenApi.Readers": {
+              "target": "Package",
+              "version": "[1.6.28, )"
+            },
+            "MySql.EntityFrameworkCore": {
               "target": "Package",
               "version": "[9.0.9, )"
+            },
+            "Swashbuckle.AspNetCore": {
+              "target": "Package",
+              "version": "[9.0.6, )"
+            },
+            "Swashbuckle.AspNetCore.Annotations": {
+              "target": "Package",
+              "version": "[9.0.6, )"
             }
           },
           "imports": [

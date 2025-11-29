@@ -4,8 +4,11 @@ using Frock_backend.IAM.Domain.Model.Commands;
 using Frock_backend.IAM.Domain.Repositories;
 using Frock_backend.IAM.Domain.Services;
 using Frock_backend.shared.Domain.Repositories;
+// No necesitas el using de ValueObjects aquí porque el command ya lo trae,
+// pero déjalo por si acaso.
 
 namespace Frock_backend.IAM.Application.Internal.CommandServices;
+
 public class UserCommandService(
     IUserRepository userRepository,
     ITokenService tokenService,
@@ -13,13 +16,6 @@ public class UserCommandService(
     IUnitOfWork unitOfWork)
     : IUserCommandService
 {
-    /**
-     * <summary>
-     *     Handle sign in command
-     * </summary>
-     * <param name="command">The sign in command</param>
-     * <returns>The authenticated user and the JWT token</returns>
-     */
     public async Task<(User user, string token)> Handle(SignInCommand command)
     {
         var user = await userRepository.FindByEmailAsync(command.Email);
@@ -32,28 +28,31 @@ public class UserCommandService(
         return (user, token);
     }
 
-    /**
-     * <summary>
-     *     Handle sign up command
-     * </summary>
-     * <param name="command">The sign up command</param>
-     * <returns>A confirmation message on successful creation.</returns>
-     */
-    public async Task Handle(SignUpCommand command)
+    public async Task<User?> Handle(SignUpCommand command)
     {
-    /*    if (await userRepository.ExistsByName(command.Name))
-            throw new Exception($"Name '{command.Nname}' is already taken");
-    */
+        if (await userRepository.ExistsByUsernameAsync(command.Username))
+             throw new Exception($"Username '{command.Username}' is already taken");
+        
         if (await userRepository.ExistsByEmail(command.Email))
-            throw new Exception($"Email '{command.Email}' is already registered");
+             throw new Exception($"Email '{command.Email}' is already registered");
 
         var hashedPassword = hashingService.HashPassword(command.Password);
-        var user = new User(command.Email, command.Username, hashedPassword, command.Role);
+        
+        // --- CORRECCIÓN FINAL Y SIMPLE ---
+        // Como command.Role YA ES UN ENUM, lo pasamos directo.
+        // No hace falta convertir nada.
+        var user = new User(
+            command.Email, 
+            command.Username, 
+            hashedPassword, 
+            command.Role // <--- ¡Directo y sin escalas!
+        );
 
         try
         {
             await userRepository.AddAsync(user);
             await unitOfWork.CompleteAsync();
+            return user; 
         }
         catch (Exception e)
         {

@@ -5,11 +5,11 @@ using suscriptions.shared.Infrastructure.Persistence.EFC.Configuration;
 
 namespace Frock_backend.suscriptions.Consumers
 {
-    public class TransportCompanyCreatedConsumer : IConsumer<ITransportCompanyCreated>
+    public class SuscriptionPlanConsumer : IConsumer<ITransportCompanyCreated>
     {
         private readonly AppDbContext _context;
 
-        public TransportCompanyCreatedConsumer(AppDbContext context)
+        public SuscriptionPlanConsumer(AppDbContext context)
         {
             _context = context;
         }

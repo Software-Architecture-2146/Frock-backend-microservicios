@@ -1,0 +1,19 @@
+﻿### 1. REGISTRO (SIGN UP) - A través del Gateway (8080)
+POST http://localhost:8080/api/authentication/sign-up
+Content-Type: application/json
+
+{
+  "username": "ArquitectoFrock",
+  "email": "admin@frock.com",
+  "password": "Password123!",
+  "role": 2
+}
+
+### 2. INICIO DE SESIÓN (SIGN IN) - Para obtener el Token
+POST http://localhost:8080/api/authentication/sign-in
+Content-Type: application/json
+
+{
+  "email": "admin@frock.com",
+  "password": "Password123!"
+}

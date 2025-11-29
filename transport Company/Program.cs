@@ -1,6 +1,8 @@
 
 using Frock.Contracts;
-
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Frock_backend.shared.Infrastructure.Persistences.EFC.Configuration;
@@ -20,7 +22,36 @@ using Frock_backend.shared.Domain.Services;
 using Frock_backend.shared.Infrastructure.Configuration;
 using Frock_backend.shared.Infrastructure.Services;
 var builder = WebApplication.CreateBuilder(args);
+// 1. LEER EL SECRETO COMO TEXTO DIRECTO
+// Usamos el operador '??' para poner una clave temporal si no la encuentra (evita el error null)
+var secretKey = builder.Configuration["TokenSettings:Secret"] ?? "EstaEsUnaClaveSuperSecretaYMuyLargaParaFrockBackend2025";
 
+// 2. VALIDAR (Opcional pero recomendado)
+if (string.IsNullOrEmpty(secretKey))
+{
+    throw new Exception("¡Falta la clave secreta en appsettings.json!");
+}
+
+var key = Encoding.ASCII.GetBytes(secretKey);
+
+// 3. CONFIGURAR JWT (Esto sigue igual)
+builder.Services.AddAuthentication(x =>
+    {
+        x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(x =>
+    {
+        x.RequireHttpsMetadata = false;
+        x.SaveToken = true;
+        x.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(key),
+            ValidateIssuer = false,
+            ValidateAudience = false
+        };
+    });
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
 
 // Configure Kebab Case Route Naming Convention
@@ -148,6 +179,7 @@ app.UseSwaggerUI(c =>
 
 app.UseHttpsRedirection();
 app.UseRouting(); // Si no está implícito
+app.UseAuthentication(); // <--- ¡IMPORTANTE! ¿Quién eres?
 app.UseAuthorization(); // Authorization de ASP.NET Core
 app.MapControllers();
 

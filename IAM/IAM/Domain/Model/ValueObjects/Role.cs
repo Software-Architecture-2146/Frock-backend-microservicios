@@ -3,6 +3,7 @@
     public enum Role
     {
         Traveller = 0,
-        TransportManager = 1
+        TransportManager = 1,
+        Admin = 2
     }
 }

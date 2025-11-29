@@ -1,5 +1,9 @@
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+
 using Frock_backend.shared.Infrastructure.Persistences.EFC.Configuration;
 using Frock_backend.shared.Infrastructure.Persistences.EFC.Repositories;
 using Frock_backend.shared.Infrastructure.Interfaces.ASP.Configuration;
@@ -24,39 +28,39 @@ using Frock_backend.IAM.Interfaces.ACL.Services;
 using Frock_backend.shared.Domain.Services;
 using Frock_backend.shared.Infrastructure.Configuration;
 using Frock_backend.shared.Infrastructure.Services;
-
+using Frock.Contracts;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Configure Lower Case URLs
+// --- 1. CONFIGURACIÓN DE RUTAS Y CONTROLADORES ---
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
-
-// Configure Kebab Case Route Naming Convention
-builder.Services.AddControllers(options => options.Conventions.Add(new KebabCaseRouteNamingConvention()));
-
+builder.Services.AddControllers(options => 
+    {
+        // Mantenemos tu configuración de rutas bonitas
+        options.Conventions.Add(new KebabCaseRouteNamingConvention());
+    })
+    .AddJsonOptions(options => // <--- Aquí agregamos la magia del JSON
+    {
+        // Esto permite enviar "Admin" en vez de 2 en el JSON
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
+// --- 2. CONFIGURACIÓN DE SWAGGER ---
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
     options.EnableAnnotations();
-     options.SwaggerDoc("v1",
-        new OpenApiInfo
-        {
-            Title = "Frock_Backend",
-            Version = "v1",
-            Description = "Frock Backend API",
-            TermsOfService = new Uri("https://acme-learning.com/tos"),
-            Contact = new OpenApiContact
-            {
-                Name = "frock Studios",
-                Email = "frockWEB.com"
-            },
-            License = new OpenApiLicense
-            {
-                Name = "Apache 2.0",
-                Url = new Uri("https://www.apache.org/licenses/LICENSE-2.0.html")
-            }
-        });
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "IAM API", // <--- CAMBIO: Nombre específico del microservicio
+        Version = "v1",
+        Description = "Frock Identity & Access Management API",
+        TermsOfService = new Uri("https://acme-learning.com/tos"),
+        Contact = new OpenApiContact { Name = "Frock Studios", Email = "contact@frock.com" },
+        License = new OpenApiLicense { Name = "Apache 2.0", Url = new Uri("https://www.apache.org/licenses/LICENSE-2.0.html") }
+    });
+    
+    // Configuración del Candado (Bearer Token)
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,
@@ -71,53 +75,40 @@ builder.Services.AddSwaggerGen(options =>
         {
             new OpenApiSecurityScheme
             {
-                Reference = new OpenApiReference
-                {
-                    Id = "Bearer",
-                    Type = ReferenceType.SecurityScheme
-                }
+                Reference = new OpenApiReference { Id = "Bearer", Type = ReferenceType.SecurityScheme }
             },
             Array.Empty<string>()
         }
     });
 });
 
+// --- 3. BASE DE DATOS ---
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (connectionString is null) throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
-if (connectionString is null)
+builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-}
+    // Ajusta esto según si es Dev o Prod, aquí lo simplifiqué para que funcione siempre
+    if (builder.Environment.IsDevelopment())
+    {
+        options.UseMySQL(connectionString)
+            .LogTo(Console.WriteLine, LogLevel.Information)
+            .EnableSensitiveDataLogging()
+            .EnableDetailedErrors();
+    }
+    else
+    {
+        options.UseMySQL(connectionString)
+            .LogTo(Console.WriteLine, LogLevel.Error)
+            .EnableDetailedErrors();
+    }
+});
 
-// Configure Database Context and Logging Levels
-if (builder.Environment.IsDevelopment())
-    builder.Services.AddDbContext<AppDbContext>(
-        options =>
-        {
-            options.UseMySQL(connectionString)
-                .LogTo(Console.WriteLine, LogLevel.Information)
-                .EnableSensitiveDataLogging()
-                .EnableDetailedErrors();
-        });
-else if (builder.Environment.IsProduction())
-    builder.Services.AddDbContext<AppDbContext>(
-        options =>
-        {
-            options.UseMySQL(connectionString)
-                .LogTo(Console.WriteLine, LogLevel.Error)
-                .EnableDetailedErrors();
-        });
-
-
-// Configure Dependency Injection
-
-// Shared Bounded Context Injection Configuration
+// --- 4. INYECCIÓN DE DEPENDENCIAS ---
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-// IAM Bounded Context Injection Configuration
-// TokenSettings Configuration
+// IAM Services
 builder.Services.Configure<TokenSettings>(builder.Configuration.GetSection("TokenSettings"));
-
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserCommandService, UserCommandService>();
 builder.Services.AddScoped<IUserQueryService, UserQueryService>();
@@ -125,27 +116,53 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IHashingService, HashingService>();
 builder.Services.AddScoped<IIamContextFacade, IamContextFacade>();
 
+// Cloudinary
+builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("Cloudinary"));
+builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
 
-//CORS
+// Cors
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("http://localhost:5173", "https://deft-tapioca-c27a9c.netlify.app", "https://frock-front-end.vercel.app")//ajustar
-              .AllowAnyHeader()
-              .AllowAnyMethod();
+        policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
     });
 });
 
-// Cloudinary Configuration
-builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("Cloudinary"));
-builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
+// --- 5. SEGURIDAD JWT (ESTO FALTABA) ---
+// Esto permite validar el token que llega
+var tokenSettings = builder.Configuration.GetSection("TokenSettings").Get<TokenSettings>();
+// Si tokenSettings es nulo, usaremos un valor default para que no explote al compilar, 
+// pero asegúrate de tenerlo en appsettings.json
+var secretKey = tokenSettings?.Secret ?? "SecretKeyTemporalParaDesarrollo123456"; 
+var key = Encoding.ASCII.GetBytes(secretKey);
 
+builder.Services.AddAuthentication(x =>
+{
+    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(x =>
+{
+    x.RequireHttpsMetadata = false;
+    x.SaveToken = true;
+    x.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(key),
+        ValidateIssuer = false,
+        ValidateAudience = false
+    };
+});
+
+// --------------------------------------------
+// Habilitar RabbitMQ para poder enviar mensajes
+builder.Services.AddRabbitMqBus();
 var app = builder.Build();
 
 app.UseCors();
 
-// Verify Database Objects are created
+// Crear DB automáticamente
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -153,23 +170,27 @@ using (var scope = app.Services.CreateScope())
     context.Database.EnsureCreated();
 }
 
-// Configure the HTTP request pipeline.
+// Pipeline
 app.UseSwagger(c =>
 {
     c.OpenApiVersion = Microsoft.OpenApi.OpenApiSpecVersion.OpenApi2_0;
 });
-
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "API V1");
-    c.RoutePrefix = string.Empty; // Opcional: para que Swagger sea la p�gina ra�z
+    // c.RoutePrefix = string.Empty; // Comentado para consistencia con los otros microservicios
     c.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.None);
+    c.DocumentTitle = "IAM API"; // Nombre de la pestaña
 });
 
 app.UseHttpsRedirection();
-app.UseRouting(); // Si no está implícito
+app.UseRouting();
+
+// Middleware de Auth
 app.UseRequestAuthorization(); // Tu middleware personalizado
-app.UseAuthorization(); // Authorization de ASP.NET Core
+app.UseAuthentication(); // <--- Verifica quién eres (JWT)
+app.UseAuthorization();  // <--- Verifica qué puedes hacer
+
 app.MapControllers();
 
 app.Run();

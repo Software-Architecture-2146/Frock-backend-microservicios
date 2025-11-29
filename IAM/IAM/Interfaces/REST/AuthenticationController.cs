@@ -6,6 +6,10 @@ using Frock_backend.IAM.Interfaces.REST.Transform;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
+// 1. NUEVOS USINGS
+using MassTransit;
+using Frock.Contracts;
+
 namespace Frock_backend.IAM.Interfaces.REST;
 
 [Authorize]
@@ -13,14 +17,15 @@ namespace Frock_backend.IAM.Interfaces.REST;
 [Route("api/[controller]")]
 [Produces(MediaTypeNames.Application.Json)]
 [SwaggerTag("Available Authentication endpoints")]
-public class AuthenticationController(IUserCommandService userCommandService) : ControllerBase
+// 2. INYECCIÓN DE IPublishEndpoint EN EL CONSTRUCTOR
+public class AuthenticationController(
+    IUserCommandService userCommandService, 
+    IPublishEndpoint publishEndpoint) : ControllerBase
 {
     /**
      * <summary>
-     *     Sign in endpoint. It allows authenticating a user
+     * Sign in endpoint. It allows authenticating a user
      * </summary>
-     * <param name="signInResource">The sign-in resource containing username and password.</param>
-     * <returns>The authenticated user resource, including a JWT token</returns>
      */
     [HttpPost("sign-in")]
     [AllowAnonymous]
@@ -41,10 +46,8 @@ public class AuthenticationController(IUserCommandService userCommandService) : 
 
     /**
      * <summary>
-     *     Sign up endpoint. It allows creating a new user
+     * Sign up endpoint. It allows creating a new user
      * </summary>
-     * <param name="signUpResource">The sign-up resource containing username and password.</param>
-     * <returns>A confirmation message on successful creation.</returns>
      */
     [HttpPost("sign-up")]
     [AllowAnonymous]
@@ -56,7 +59,24 @@ public class AuthenticationController(IUserCommandService userCommandService) : 
     public async Task<IActionResult> SignUp([FromBody] SignUpResource signUpResource)
     {
         var signUpCommand = SignUpCommandFromResourceAssembler.ToCommandFromResource(signUpResource);
-        await userCommandService.Handle(signUpCommand);
+        
+        // 3. CAPTURAMOS EL USUARIO CREADO
+        // (Si esto te da error rojo, avísame, significa que tu servicio devuelve void)
+        var createdUser = await userCommandService.Handle(signUpCommand);
+        
+        // 4. PUBLICAMOS EL EVENTO A RABBITMQ
+        if (createdUser != null)
+        {
+            await publishEndpoint.Publish<IUserCreated>(new
+            {
+                Id = createdUser.Id,
+                Username = createdUser.Username,
+                // Si tu entidad tiene email, descomenta esto:
+                // Email = createdUser.Email, 
+                Role = createdUser.Role
+            });
+        }
+
         return Ok(new { message = "User created successfully" });
     }
 }

@@ -1,6 +1,47 @@
-@transport_Company_HostAddress = http://localhost:5044
+### ==========================================
+### PASO 1: OBTENER CREDENCIALES (IAM)
+### ==========================================
+POST http://localhost:8080/api/authentication/sign-in
+Content-Type: application/json
 
-GET {{transport_Company_HostAddress}}/weatherforecast/
-Accept: application/json
+{
+  "email": "admin@frock.com",
+  "password": "Password123!"
+}
 
-###
+> {%
+    client.global.set("auth_token", response.body.token);
+    client.log("TOKEN GUARDADO: " + response.body.token);
+%}
+
+### ==========================================
+### PASO 2: PRUEBA DE SEGURIDAD (Transport)
+### ==========================================
+# Intentamos crear SIN token.
+# RESULTADO ESPERADO: 401 Unauthorized
+
+POST http://localhost:8080/api/companies
+Content-Type: multipart/form-data; boundary=MyBoundary
+
+--MyBoundary
+Content-Disposition: form-data; name="name"
+
+Empresa Pirata (Intento de Hackeo)
+--MyBoundary--
+
+### ==========================================
+### PASO 3: PRUEBA DE ACCESO (Transport)
+### ==========================================
+# Entramos CON token.
+# NOTA: Ya NO enviamos 'fkIdUser'. El sistema lo saca del Token.
+# RESULTADO ESPERADO: 201 Created
+
+POST http://localhost:8080/api/companies
+Authorization: Bearer {{auth_token}}
+Content-Type: multipart/form-data; boundary=MyBoundary
+
+--MyBoundary
+Content-Disposition: form-data; name="name"
+
+Empresa Segura (ID automatico)
+--MyBoundary--

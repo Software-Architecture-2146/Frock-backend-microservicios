@@ -9,8 +9,10 @@ using Swashbuckle.AspNetCore.Annotations;
 using System.Net.Mime;
 using MassTransit;
 using Frock.Contracts;
+using Microsoft.AspNetCore.Authorization;
 namespace Frock_backend.transport_Company.Interfaces.REST
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     [Produces(MediaTypeNames.Application.Json)]
@@ -38,6 +40,14 @@ namespace Frock_backend.transport_Company.Interfaces.REST
         {
             try
             {
+                // 1. --- SEGURIDAD: EXTRAER ID DEL TOKEN ---
+                var userIdClaim = HttpContext.User.Claims.FirstOrDefault(c => c.Type == "id")?.Value;
+                
+                // Validación de seguridad
+                if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int authenticatedUserId))
+                {
+                    return Unauthorized(new { message = "Token inválido o no contiene el ID del usuario." });
+                }
                 string logoUrl = string.Empty;
 
                 // Subir imagen a Cloudinary si se proporciona
@@ -50,7 +60,7 @@ namespace Frock_backend.transport_Company.Interfaces.REST
                 var createCompanyResource = new CreateCompanyResource(
                     resource.Name,
                     logoUrl,
-                    resource.FkIdUser
+                    authenticatedUserId 
                 );
 
                 var createCompanyCommand = CreateCompanyCommandFromResourceAssembler.ToCommandFromResource(createCompanyResource);

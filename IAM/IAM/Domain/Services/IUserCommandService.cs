@@ -7,7 +7,7 @@ public interface IUserCommandService
 {
     /**
         * <summary>
-        *     Handle sign in command
+        * Handle sign in command
         * </summary>
         * <param name="command">The sign in command</param>
         * <returns>The authenticated user and the JWT token</returns>
@@ -16,10 +16,11 @@ public interface IUserCommandService
 
     /**
         * <summary>
-        *     Handle sign up command
+        * Handle sign up command
         * </summary>
         * <param name="command">The sign up command</param>
-        * <returns>A confirmation message on successful creation.</returns>
+        * <returns>The created user object (so we can get the ID).</returns>
         */
-    Task Handle(SignUpCommand command);
+    // CAMBIO AQUÍ: De 'Task' a 'Task<User?>'
+    Task<User?> Handle(SignUpCommand command);
 }
