@@ -10,6 +10,7 @@ namespace Frock_backend.shared.Infrastructure.Persistences.EFC.Configuration
     {
         public DbSet<Company> Companies { get; set; }
         public DbSet<Stop> Stops { get; set; }
+        public DbSet<RouteAggregate> Routes { get; set; }
         protected override void OnConfiguring(DbContextOptionsBuilder builder)
         {
             builder.AddCreatedUpdatedInterceptor();
@@ -22,6 +23,7 @@ namespace Frock_backend.shared.Infrastructure.Persistences.EFC.Configuration
 
             builder.Entity<Company>().ToTable("Companies");
             builder.Entity<Company>().HasKey(p => p.Id);
+            builder.Entity<Company>().Property(p => p.Id).ValueGeneratedNever();
             
             // CONFIGURACIÓN STOP
             builder.Entity<Stop>().ToTable("Stops");
@@ -35,6 +37,7 @@ namespace Frock_backend.shared.Infrastructure.Persistences.EFC.Configuration
                 b.Property(r => r.Price).IsRequired();
                 b.Property(r => r.Duration).IsRequired();
                 b.Property(r => r.Frequency).IsRequired();
+                b.Property(r => r.CompanyId).IsRequired();
 
                 // 2) Schedule como entidad hija (1-N)
                 b.HasMany(r => r.Schedules)

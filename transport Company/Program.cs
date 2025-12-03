@@ -21,7 +21,12 @@ using Frock_backend.transport_Company.Infrastructure.Repositories;
 using Frock_backend.shared.Domain.Services;
 using Frock_backend.shared.Infrastructure.Configuration;
 using Frock_backend.shared.Infrastructure.Services;
+using System.IdentityModel.Tokens.Jwt;
+using Frock_backend.transport_Company.Consumers;
+
 var builder = WebApplication.CreateBuilder(args);
+JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+
 // 1. LEER EL SECRETO COMO TEXTO DIRECTO
 // Usamos el operador '??' para poner una clave temporal si no la encuentra (evita el error null)
 var secretKey = builder.Configuration["TokenSettings:Secret"] ?? "EstaEsUnaClaveSuperSecretaYMuyLargaParaFrockBackend2025";
@@ -58,45 +63,31 @@ builder.Services.AddRouting(options => options.LowercaseUrls = true);
 builder.Services.AddControllers(options => options.Conventions.Add(new KebabCaseRouteNamingConvention()));
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options =>
+builder.Services.AddSwaggerGen(c =>
 {
-    options.EnableAnnotations();
-     options.SwaggerDoc("v1",
-        new OpenApiInfo
-        {
-            Title = "Frock_Backend",
-            Version = "v1",
-            Description = "Frock Backend API",
-            TermsOfService = new Uri("https://acme-learning.com/tos"),
-            Contact = new OpenApiContact
-            {
-                Name = "frock Studios",
-                Email = "frockWEB.com"
-            },
-            License = new OpenApiLicense
-            {
-                Name = "Apache 2.0",
-                Url = new Uri("https://www.apache.org/licenses/LICENSE-2.0.html")
-            }
-        });
-    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    c.EnableAnnotations();
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Transport Company API", Version = "v1" });
+
+    // --- CORRECCIÓN DEL CANDADO ---
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        In = ParameterLocation.Header,
-        Description = "Please enter token",
+        Description = "JWT Authorization header using the Bearer scheme.",
         Name = "Authorization",
-        Type = SecuritySchemeType.Http,
-        BearerFormat = "JWT",
-        Scheme = "bearer"
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http, // <--- ESTO ES LO QUE FALTABA O ESTABA MAL
+        Scheme = "bearer",
+        BearerFormat = "JWT"
     });
-    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
             new OpenApiSecurityScheme
             {
                 Reference = new OpenApiReference
                 {
-                    Id = "Bearer",
-                    Type = ReferenceType.SecurityScheme
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
                 }
             },
             Array.Empty<string>()
@@ -150,7 +141,7 @@ builder.Services.AddCors(options =>
 // Cloudinary Configuration
 builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("Cloudinary"));
 builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
-builder.Services.AddRabbitMqBus();
+builder.Services.AddRabbitMqBus(typeof(UserCreatedConsumer));
 var app = builder.Build();
 
 app.UseCors();
@@ -166,7 +157,7 @@ using (var scope = app.Services.CreateScope())
 // Configure the HTTP request pipeline.
 app.UseSwagger(c =>
 {
-    c.OpenApiVersion = Microsoft.OpenApi.OpenApiSpecVersion.OpenApi2_0;
+
 });
 
 app.UseSwaggerUI(c =>

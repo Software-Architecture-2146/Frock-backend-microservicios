@@ -12,7 +12,7 @@ public class CompanyRepository : BaseRepository<Company>, ICompanyRepository
     {
     }
 
-    public async Task<Company?> FindByIdAsync(Guid id)
+    public async Task<Company?> FindByIdAsync(int id)
     {
         return await Context.Set<Company>().FirstOrDefaultAsync(c => c.Id == id);
     }

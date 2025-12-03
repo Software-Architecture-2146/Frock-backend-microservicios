@@ -2,6 +2,7 @@
 using Frock.Contracts;
 using Frock_backend.routes.Domain.Model.Entities;
 using Frock_backend.shared.Infrastructure.Persistences.EFC.Configuration; 
+using Microsoft.EntityFrameworkCore;
 
 namespace Frock_backend.routes.Consumers
 {

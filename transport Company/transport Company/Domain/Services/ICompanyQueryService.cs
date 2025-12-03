@@ -5,13 +5,13 @@ namespace Frock_backend.transport_Company.Domain.Services
 {
     public interface ICompanyQueryService
     {
-        Task<IEnumerable<Company>> Handle(GetAllCompaniesQuery query);
+        Task<IEnumerable<Companies>> Handle(GetAllCompaniesQuery query);
 
-        Task<Company?> Handle(GetCompanyByIdQuery query);
+        Task<Companies?> Handle(GetCompanyByIdQuery query);
 
-        Task<Company?> Handle(GetCompanyByNameQuery query);
+        Task<Companies?> Handle(GetCompanyByNameQuery query);
 
-        Task<Company?> Handle(GetCompanyByFkIdUserQuery query);
+        Task<Companies?> Handle(GetCompanyByFkIdUserQuery query);
         
     }
 }

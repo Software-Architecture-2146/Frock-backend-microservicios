@@ -7,24 +7,79 @@ using Microsoft.OpenApi.Models;
 using suscriptions.shared.Infrastructure.Persistence.EFC.Configuration; // Tu AppDbContext
 using Frock_backend.suscriptions.Consumers;
 using Microsoft.OpenApi; // Tu Consumidor
-
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using System.IdentityModel.Tokens.Jwt;
 var builder = WebApplication.CreateBuilder(args);
+// Limpiar claims
+JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
+// Leer secreto
+var secretKey = builder.Configuration["TokenSettings:Secret"] ?? "EstaEsUnaClaveSuperSecretaYMuyLargaParaFrockBackend2025";
+var key = Encoding.ASCII.GetBytes(secretKey);
+
+// Configurar JWT
+builder.Services.AddAuthentication(x =>
+    {
+        x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(x =>
+    {
+        x.RequireHttpsMetadata = false;
+        x.SaveToken = true;
+        x.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(key),
+            ValidateIssuer = false,
+            ValidateAudience = false
+        };
+    });
 // --- 1. Configuración de Servicios ---
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer(); // Necesario para Swagger clásico
 
 // Configuración de Swagger (Título y Versión)
-builder.Services.AddSwaggerGen(options =>
+// Configuración de Swagger con botón Authorize
+builder.Services.AddSwaggerGen(c =>
 {
-    options.EnableAnnotations();
-    options.SwaggerDoc("v1", new OpenApiInfo
+    c.EnableAnnotations();
+    c.SwaggerDoc("v1", new OpenApiInfo
     {
         Title = "Suscriptions API",
         Version = "v1",
         Description = "Microservicio de Suscripciones y Planes"
     });
+
+    // --- ESTO ES LO QUE FALTABA ---
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme.",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+    // -----------------------------
 });
 
 // --- 2. Base de Datos (MySQL) ---
@@ -38,7 +93,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 // --- 3. RabbitMQ (MassTransit) ---
 // Registramos el consumidor que creamos para escuchar a Transport Company
-builder.Services.AddRabbitMqBus(typeof(SuscriptionPlanConsumer));
+builder.Services.AddRabbitMqBus(typeof(SuscriptionPlanConsumer), typeof(RouteCreatedConsumer));
 
 var app = builder.Build();
 
@@ -70,6 +125,7 @@ app.UseSwaggerUI(c =>
 });
 
 app.UseHttpsRedirection();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 

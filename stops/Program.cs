@@ -29,10 +29,39 @@ using Frock_backend.shared.Domain.Services;
 using Frock_backend.shared.Infrastructure.Configuration;
 using Frock_backend.shared.Infrastructure.Services;
 using Frock_backend.stops.Application.External;
-
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using System.IdentityModel.Tokens.Jwt;
+using Frock_backend.stops.Consumers;
 
 var builder = WebApplication.CreateBuilder(args);
+// 1. Evita que .NET cambie los nombres de los claims
+JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
+// 2. Leer el secreto
+var secretKey = builder.Configuration["TokenSettings:Secret"] ?? "EstaEsUnaClaveSuperSecretaYMuyLargaParaFrockBackend2025";
+var key = Encoding.ASCII.GetBytes(secretKey);
+
+// 3. Configurar la validación del Token
+builder.Services.AddAuthentication(x =>
+    {
+        x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(x =>
+    {
+        x.RequireHttpsMetadata = false;
+        x.SaveToken = true;
+        x.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(key),
+            ValidateIssuer = false,
+            ValidateAudience = false
+        };
+    });
+// ----------------------------
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
 
 // Configure Kebab Case Route Naming Convention
@@ -132,7 +161,7 @@ builder.Services.AddScoped<IRegionRepository, RegionRepository>();
     builder.Services.AddScoped<IStopRepository, StopRepository>();
     builder.Services.AddScoped<IStopCommandService, StopCommandService>();
     builder.Services.AddScoped<IStopQueryService, StopQueryService>();
-
+    builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
 
 //GEOSERVICE
     builder.Services.AddHttpClient<IGeoImportService, GeoImportService>(client =>
@@ -159,7 +188,7 @@ builder.Services.AddCors(options =>
 builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("Cloudinary"));
 builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
 
-builder.Services.AddRabbitMqBus();
+builder.Services.AddRabbitMqBus(typeof(TransportCompanyReferenceConsumer));
 
 var app = builder.Build();
 
@@ -188,7 +217,6 @@ using (var scope = app.Services.CreateScope())
 // Configure the HTTP request pipeline.
 app.UseSwagger(c =>
 {
-    c.OpenApiVersion = Microsoft.OpenApi.OpenApiSpecVersion.OpenApi2_0;
 });
 
 app.UseSwaggerUI(c =>
@@ -200,7 +228,8 @@ app.UseSwaggerUI(c =>
 });
 
 app.UseHttpsRedirection();
-app.UseRouting(); // Si no está implícito
+app.UseRouting();
+app.UseAuthentication();// Si no está implícito
 app.UseAuthorization(); // Authorization de ASP.NET Core
 app.MapControllers();
 

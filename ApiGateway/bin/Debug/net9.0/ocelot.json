@@ -1,79 +1,78 @@
 ﻿{
-  
   "Routes": [
     {
-      "//": "CONFIGURACIÓN DE IAM (Puerto 5010)",
+      "//": "CONFIGURACIÓN DE IAM",
       "DownstreamPathTemplate": "/api/authentication/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 5010
+          "Host": "iam-service",
+          "Port": 8080
         }
       ],
       "UpstreamPathTemplate": "/api/authentication/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
     },
     {
-      "//": "CONFIGURACIÓN DE IAM USERS (Puerto 5010)",
+      "//": "CONFIGURACIÓN DE IAM USERS",
       "DownstreamPathTemplate": "/api/users/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 5010
+          "Host": "iam-service",
+          "Port": 8080
         }
       ],
       "UpstreamPathTemplate": "/api/users/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
     },
     {
-      "//": "CONFIGURACIÓN DE TRANSPORT COMPANY (Puerto 5027)",
+      "//": "CONFIGURACIÓN DE TRANSPORT COMPANY",
       "DownstreamPathTemplate": "/api/companies/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 5027
+          "Host": "transport-company",
+          "Port": 8080
         }
       ],
       "UpstreamPathTemplate": "/api/companies/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
     },
     {
-      "//": "CONFIGURACIÓN DE ROUTES (Puerto 5030)",
+      "//": "CONFIGURACIÓN DE ROUTES",
       "DownstreamPathTemplate": "/api/routes/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 5030
+          "Host": "routes-service",
+          "Port": 8080
         }
       ],
       "UpstreamPathTemplate": "/api/routes/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
     },
     {
-      "//": "CONFIGURACIÓN DE STOPS (Puerto 5040)",
+      "//": "CONFIGURACIÓN DE STOPS",
       "DownstreamPathTemplate": "/api/stops/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 5040
+          "Host": "stops-service",
+          "Port": 8080
         }
       ],
       "UpstreamPathTemplate": "/api/stops/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
     },
     {
-      "//": "CONFIGURACIÓN DE SUSCRIPTIONS (Puerto 5050)",
+      "//": "CONFIGURACIÓN DE SUSCRIPTIONS",
       "DownstreamPathTemplate": "/api/suscriptions/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 5050
+          "Host": "suscriptions-service",
+          "Port": 8080
         }
       ],
       "UpstreamPathTemplate": "/api/suscriptions/{everything}",

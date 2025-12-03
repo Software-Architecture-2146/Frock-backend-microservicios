@@ -8,14 +8,14 @@ namespace Frock_backend.transport_Company.Application.Internal.CommandServices
 {
     public class CompanyCommandService(ICompanyRepository companyRepository, IUnitOfWork unitOfWork) : ICompanyCommandService
     {
-        public async Task<Company?> Handle(CreateCompanyCommand command)
+        public async Task<Companies?> Handle(CreateCompanyCommand command)
         {
             var existingCompany = await companyRepository.FindByNameAsync(command.Name);
             if (existingCompany != null)
             {
                 throw new Exception($"Company with name '{command.Name}' already exists.");
             }
-            var newCompany = new Company(command);
+            var newCompany = new Companies(command);
             try
             {
                 await companyRepository.AddAsync(newCompany);
@@ -28,7 +28,7 @@ namespace Frock_backend.transport_Company.Application.Internal.CommandServices
                 return null; // Signal failure to the controller
             }
         }
-        public async Task<Company?> Handle(UpdateCompanyCommand command)
+        public async Task<Companies?> Handle(UpdateCompanyCommand command)
         {
             var companyToUpdate = await companyRepository.FindByIdAsync(command.Id);
             if (companyToUpdate == null)
@@ -54,7 +54,7 @@ namespace Frock_backend.transport_Company.Application.Internal.CommandServices
             }
         }
 
-        public async Task<Company?> Handle(DeleteCompanyCommand command)
+        public async Task<Companies?> Handle(DeleteCompanyCommand command)
         {
             var companyToDelete = await companyRepository.FindByIdAsync(command.Id);
             if (companyToDelete == null)

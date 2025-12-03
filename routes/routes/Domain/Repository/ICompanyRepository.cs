@@ -6,5 +6,5 @@ namespace Frock_backend.routes.Domain.Repository;
 public interface ICompanyRepository : IBaseRepository<Company>
 {
     // Aquí podrías agregar métodos extra si los necesitas, como FindByName
-    Task<Company?> FindByIdAsync(Guid id);
+    Task<Company?> FindByIdAsync(int id);
 }

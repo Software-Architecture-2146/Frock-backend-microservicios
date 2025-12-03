@@ -8,7 +8,7 @@ namespace Frock_backend.routes.Infrastructure.Repositories
 {
     public class RouteRepository(AppDbContext context) : BaseRepository<RouteAggregate>(context), IRouteRepository
     {
-        public async Task<List<RouteAggregate>> FindByCompanyId(Guid companyId)
+        public async Task<List<RouteAggregate>> FindByCompanyId(int companyId)
         {
             // Ahora buscamos directamente en NUESTRA base de datos local
             // porque ya tenemos los datos replicados.

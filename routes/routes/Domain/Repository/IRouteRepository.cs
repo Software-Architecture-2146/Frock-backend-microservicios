@@ -5,7 +5,7 @@ namespace Frock_backend.routes.Domain.Repository
 {
     public interface IRouteRepository:IBaseRepository<RouteAggregate>
     {
-        Task<List<RouteAggregate>> FindByCompanyId(Guid companyId);
+        Task<List<RouteAggregate>> FindByCompanyId(int companyId);
         Task<List<RouteAggregate>> FindByDistrictId(int districtId);
 
         Task<List<RouteAggregate>> ListRoutes();

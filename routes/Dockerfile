@@ -1,44 +1,23 @@
-﻿# 1) Build con SDK 9.0
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
-
-# (Opcional) instala clang y zlib1g-dev si haces AOT
-RUN apt-get update \
- && apt-get install -y --no-install-recommends \
-    clang \
-    zlib1g-dev
-
-ARG BUILD_CONFIGURATION=Release
+﻿FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
-# Copia y restaura tu .csproj
-COPY ["Frock-backend/Frock-backend.csproj", "Frock-backend/"]
-RUN dotnet restore "Frock-backend/Frock-backend.csproj"
+# 1. Copiar csproj del servicio y sus dependencias compartidas
+COPY ["routes/routes.csproj", "routes/"]
+COPY ["Frock.Contracts/Frock.Contracts.csproj", "Frock.Contracts/"]
 
-# Copia todo y compila
+# 2. Restaurar
+RUN dotnet restore "routes/routes.csproj"
+
+# 3. Copiar todo y compilar
 COPY . .
-WORKDIR "/src/Frock-backend"
-RUN dotnet build "Frock-backend.csproj" \
-    -c $BUILD_CONFIGURATION \
-    -o /app/build
+WORKDIR "/src/routes"
+RUN dotnet build "routes.csproj" -c Release -o /app/build
+RUN dotnet publish "routes.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
-# 2) Publica tu aplicación
-FROM build AS publish
-ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "Frock-backend.csproj" \
-    -c $BUILD_CONFIGURATION \
-    -o /app/publish \
-    /p:UseAppHost=true
-
-# 3) Imagen de runtime con ASP.NET (incluye .NET 9)
+# 4. Imagen Final
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
 WORKDIR /app
-
-# Que Kestrel escuche en el puerto 8080
 ENV ASPNETCORE_URLS=http://+:8080
 EXPOSE 8080
-
-# Copia los artefactos publicados
-COPY --from=publish /app/publish .
-
-# Arranca tu aplicación
-ENTRYPOINT ["dotnet", "Frock-backend.dll"]
+COPY --from=build /app/publish .
+ENTRYPOINT ["dotnet", "routes.dll"]

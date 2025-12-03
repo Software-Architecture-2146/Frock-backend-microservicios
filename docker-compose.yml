@@ -1,5 +1,7 @@
 ﻿version: '3.8'
+
 services:
+  # --- INFRAESTRUCTURA ---
   rabbitmq:
     image: masstransit/rabbitmq:latest
     ports:
@@ -8,3 +10,98 @@ services:
     environment:
       - RABBITMQ_DEFAULT_USER=guest
       - RABBITMQ_DEFAULT_PASS=guest
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # --- MICROSERVICIOS ---
+  iam-service:
+    build:
+      context: .
+      dockerfile: "IAM/Dockerfile"
+    ports:
+      - "5010:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=host.docker.internal;Database=FrockDB_IAM;User=root;Password=admin123;
+      - RabbitMq__Host=rabbitmq
+      - TokenSettings__Secret=EstaEsUnaClaveSuperSecretaYMuyLargaParaFrockBackend2025
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  transport-company:
+    build:
+      context: .
+      dockerfile: "transport Company/Dockerfile"
+    ports:
+      - "5027:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=host.docker.internal;Database=FrockDB_TransportCompany;User=root;Password=admin123;
+      - RabbitMq__Host=rabbitmq
+      - TokenSettings__Secret=EstaEsUnaClaveSuperSecretaYMuyLargaParaFrockBackend2025
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  routes-service:
+    build:
+      context: .
+      dockerfile: "routes/Dockerfile"
+    ports:
+      - "5030:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=host.docker.internal;Database=FrockDB_Routes;User=root;Password=admin123;
+      - RabbitMq__Host=rabbitmq
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  stops-service:
+    build:
+      context: .
+      dockerfile: "stops/Dockerfile"
+    ports:
+      - "5040:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=host.docker.internal;Database=FrockDB_Stops;User=root;Password=admin123;
+      - RabbitMq__Host=rabbitmq
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  suscriptions-service:
+    build:
+      context: .
+      dockerfile: "suscriptions/Dockerfile"
+    ports:
+      - "5050:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=host.docker.internal;Database=FrockDB_Suscriptions;User=root;Password=admin123;
+      - RabbitMq__Host=rabbitmq
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  # --- API GATEWAY ---
+  api-gateway:
+    build:
+      context: .
+      dockerfile: "ApiGateway/Dockerfile"
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    # El Gateway depende de que todos los servicios estén arriba para enrutar
+    depends_on:
+      - iam-service
+      - transport-company
+      - routes-service
+      - stops-service
+      - suscriptions-service

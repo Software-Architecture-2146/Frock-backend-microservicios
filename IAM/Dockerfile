@@ -1,44 +1,40 @@
-﻿# 1) Build con SDK 9.0
+﻿# 1. IMAGEN BASE (SDK para compilar)
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
-
-# (Opcional) instala clang y zlib1g-dev si haces AOT
-RUN apt-get update \
- && apt-get install -y --no-install-recommends \
-    clang \
-    zlib1g-dev
-
-ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
-# Copia y restaura tu .csproj
-COPY ["Frock-backend/Frock-backend.csproj", "Frock-backend/"]
-RUN dotnet restore "Frock-backend/Frock-backend.csproj"
+# --- ZONA DE COPIA DE PROYECTOS ---
+# Aquí copiamos los .csproj de IAM y de sus dependencias hermanas.
+# Esto permite que Docker pueda restaurar los paquetes NuGet antes de copiar todo el código.
 
-# Copia todo y compila
+COPY ["IAM/IAM.csproj", "IAM/"]
+COPY ["Frock.Contracts/Frock.Contracts.csproj", "Frock.Contracts/"]
+
+# ----------------------------------
+
+# 2. RESTAURAR
+# Al restaurar IAM, también restaurará las dependencias porque ya copiamos sus csproj
+RUN dotnet restore "IAM/IAM.csproj"
+
+# 3. COPIAR EL CÓDIGO FUENTE
+# Copiamos todo el contenido de la solución al contenedor
 COPY . .
-WORKDIR "/src/Frock-backend"
-RUN dotnet build "Frock-backend.csproj" \
-    -c $BUILD_CONFIGURATION \
-    -o /app/build
 
-# 2) Publica tu aplicación
-FROM build AS publish
-ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "Frock-backend.csproj" \
-    -c $BUILD_CONFIGURATION \
-    -o /app/publish \
-    /p:UseAppHost=true
+# 4. COMPILAR Y PUBLICAR
+WORKDIR "/src/IAM"
+RUN dotnet build "IAM.csproj" -c Release -o /app/build
+RUN dotnet publish "IAM.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
-# 3) Imagen de runtime con ASP.NET (incluye .NET 9)
+# 5. IMAGEN FINAL (RUNTIME - Solo para ejecutar)
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
 WORKDIR /app
 
-# Que Kestrel escuche en el puerto 8080
+# Exponemos el puerto interno 8080 (Estándar en contenedores .NET modernos)
 ENV ASPNETCORE_URLS=http://+:8080
 EXPOSE 8080
 
-# Copia los artefactos publicados
-COPY --from=publish /app/publish .
+# Copiamos lo compilado desde la etapa anterior
+COPY --from=build /app/publish .
 
-# Arranca tu aplicación
-ENTRYPOINT ["dotnet", "Frock-backend.dll"]
+# 6. ARRANQUE
+# ¡Aquí ponemos el nombre real de tu DLL!
+ENTRYPOINT ["dotnet", "IAM.dll"]

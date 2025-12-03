@@ -6,6 +6,9 @@ using Frock_backend.routes.Interface.REST.Transform;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Net.Mime;
+
+using Microsoft.AspNetCore.Authorization;
+
 namespace Frock_backend.routes.Interface.REST
 {
     /// <summary>
@@ -13,6 +16,7 @@ namespace Frock_backend.routes.Interface.REST
     /// </summary>
     /// <param name="routeCommandService">The Route Command Service</param>
     /// <param name="">The Route Query Service</param>
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     [Produces(MediaTypeNames.Application.Json)]
@@ -32,18 +36,27 @@ namespace Frock_backend.routes.Interface.REST
             Description = "Creates a new route with a given parameters",
             OperationId = "Create route"
             )]
-        [SwaggerResponse(201, "The route was created", typeof(CreateFullRouteResource))]
+        [SwaggerResponse(201, "The route was created", typeof(RouteAggregateResource))] // Ajusté el tipo de retorno
         [SwaggerResponse(400, "The route was not created")]
-        public async Task<ActionResult> CreateRoute([FromBody] CreateFullRouteResource resource)
+        [SwaggerResponse(401, "Unauthorized")]
+        public async Task<IActionResult> CreateRoute([FromBody] CreateFullRouteResource resource)
         {
-            if (resource == null)
-            {
-                return BadRequest("Resource cannot be null.");
-            }
-            var createRouteCommand = CreateFullRouteCommandFromResourceAssembler.toCommandFromResource(resource);
-            var result = await routeCommandService.Handle(createRouteCommand);
-            if (result is null) return BadRequest();
-            return Ok(result);
+            
+            if (resource == null) return BadRequest("Resource cannot be null.");
+
+            // --- 1. SEGURIDAD: EXTRAER ID DEL TOKEN ---
+            var userIdClaim = HttpContext.User.Claims.FirstOrDefault(c => c.Type == "id")?.Value;
+            if (string.IsNullOrEmpty(userIdClaim)) return Unauthorized();
+            int userId = int.Parse(userIdClaim);
+  
+            var command = CreateFullRouteCommandFromResourceAssembler.toCommandFromResource(resource, userId);
+            var result = await routeCommandService.Handle(command);            
+            if (result is null) return BadRequest("Could not create route. Check Company ownership or Stop existence.");
+            
+            // Retornamos el recurso creado
+            var routeResource = RouteAggregateResourceFromResourceAssembler.ToResourceFromEntity(result);
+            return CreatedAtAction(nameof(GetRouteById), new { id = result.Id }, routeResource);
+            
         }
 
         //Get all routes
@@ -58,12 +71,9 @@ namespace Frock_backend.routes.Interface.REST
         public async Task<ActionResult<IEnumerable<RouteAggregateResource>>> GetAllRoutes()
         {
             GetAllRoutesQuery query = new GetAllRoutesQuery();
-            var routes = await routeQueryService.Handle(query); // Assuming this method exists in the service
-            if (routes == null || !routes.Any())
-            {
-                return NotFound("No routes found.");
-            }
-            var resources = routes.Select((routeAggregate) => RouteAggregateResourceFromResourceAssembler.ToResourceFromEntity(routeAggregate)).ToList();
+            var routes = await routeQueryService.Handle(query);
+            if (routes == null) return NotFound(); // Cambié a solo check de null para simplificar
+            var resources = routes.Select(RouteAggregateResourceFromResourceAssembler.ToResourceFromEntity);
             return Ok(resources);
         }
 
@@ -82,20 +92,14 @@ namespace Frock_backend.routes.Interface.REST
             )]
         [SwaggerResponse(200, "The routes were retrieved", typeof(IEnumerable<RouteAggregateResource>))]
         [SwaggerResponse(404, "No routes found")]
-        public async Task<ActionResult<IEnumerable<RouteAggregateResource>>> GetAllRoutes(Guid FkIdCompany)
+        public async Task<ActionResult<IEnumerable<RouteAggregateResource>>> GetAllRoutes(int FkIdCompany)
         {
             GetAllRoutesByFkCompanyIdQuery query = new GetAllRoutesByFkCompanyIdQuery(FkIdCompany);
-            var routes = await routeQueryService.Handle(query); // Assuming this method exists in the service
-            if (routes == null || !routes.Any())
-            {
-                return NotFound("No routes found.");
-            }
-
-            var resources = routes.Select((routeAggregate) => RouteAggregateResourceFromResourceAssembler.ToResourceFromEntity(routeAggregate)).ToList();
-
+            var routes = await routeQueryService.Handle(query);
+            if (routes == null) return NotFound();
+            var resources = routes.Select(RouteAggregateResourceFromResourceAssembler.ToResourceFromEntity);
             return Ok(resources);
         }
-
         /// <summary>
         /// Gets all routes by FkIdDistrict.
         /// 
@@ -110,15 +114,11 @@ namespace Frock_backend.routes.Interface.REST
         public async Task<ActionResult<IEnumerable<RouteAggregateResource>>> GetAllRoutesByDistrict(int FkIdDistrict)
         {
             GetAllRoutesByFkDistrictIdQuery query = new GetAllRoutesByFkDistrictIdQuery(FkIdDistrict);
-            var routes = await routeQueryService.Handle(query); // Assuming this method exists in the service
-            if (routes == null || !routes.Any())
-            {
-                return NotFound("No routes found.");
-            }
-            var resources = routes.Select((routeAggregate) => RouteAggregateResourceFromResourceAssembler.ToResourceFromEntity(routeAggregate)).ToList();
+            var routes = await routeQueryService.Handle(query);
+            if (routes == null) return NotFound();
+            var resources = routes.Select(RouteAggregateResourceFromResourceAssembler.ToResourceFromEntity);
             return Ok(resources);
         }
-
         //Get route by id
         [HttpGet("{id}")]
         [SwaggerOperation(
@@ -131,14 +131,10 @@ namespace Frock_backend.routes.Interface.REST
         public async Task<ActionResult<RouteAggregateResource>> GetRouteById(int id)
         {
             GetRouteByIdQuery query = new GetRouteByIdQuery(id);
-            var route = await routeQueryService.Handle(query); // Assuming this method exists in the service
-            if (route == null)
-            {
-                return NotFound("Route not found.");
-            }
+            var route = await routeQueryService.Handle(query);
+            if (route == null) return NotFound("Route not found.");
             var resource = RouteAggregateResourceFromResourceAssembler.ToResourceFromEntity(route);
             return Ok(resource);
-
         }
 
         [HttpPut("{id}")]
@@ -151,10 +147,7 @@ namespace Frock_backend.routes.Interface.REST
         [SwaggerResponse(404, "Route not found")]
         public async Task<ActionResult<RouteAggregateResource>> UpdateRoute(int id, [FromBody] UpdateRouteResource resource)
         {
-            if (resource == null)
-            {
-                return BadRequest("Resource cannot be null or ID mismatch.");
-            }
+            if (resource == null) return BadRequest();
             var updateRouteCommand = UpdateRouteCommandFromResourceAssembler.toCommandFromResource(resource);
             var result = await routeCommandService.Handle(id, updateRouteCommand);
             if (result is null) return NotFound("Route not found.");
@@ -174,7 +167,8 @@ namespace Frock_backend.routes.Interface.REST
         {
             var command = new DeleteRouteCommand(id);
             await routeCommandService.Handle(command);
-            return NoContent(); // 204 No Content response
+            return NoContent();
         }
+        
     }
 }

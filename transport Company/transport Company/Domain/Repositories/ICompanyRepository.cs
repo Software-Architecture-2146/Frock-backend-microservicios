@@ -4,9 +4,9 @@ using Frock_backend.transport_Company.Domain.Model.Aggregates;
 
 namespace Frock_backend.transport_Company.Domain.Repositories
 {
-    public interface ICompanyRepository : IBaseRepository<Company>
+    public interface ICompanyRepository : IBaseRepository<Companies>
     {
-        Task<Company?> FindByNameAsync(string name);
-        Task<Company?> FindByFkIdUserAsync(int FkUserId);        
+        Task<Companies?> FindByNameAsync(string name);
+        Task<Companies?> FindByFkIdUserAsync(int FkUserId);        
     }
 }

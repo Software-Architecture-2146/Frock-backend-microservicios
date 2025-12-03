@@ -7,20 +7,20 @@ namespace Frock_backend.transport_Company.Application.Internal.QueryServices
 {
     public class CompanyQueryService(ICompanyRepository companyRepository) : ICompanyQueryService
     {
-        public async Task<IEnumerable<Company>> Handle(GetAllCompaniesQuery query)
+        public async Task<IEnumerable<Companies>> Handle(GetAllCompaniesQuery query)
         {
             return await companyRepository.ListAsync();
         }
-        public async Task<Company?> Handle(GetCompanyByIdQuery query)
+        public async Task<Companies?> Handle(GetCompanyByIdQuery query)
         {
             return await companyRepository.FindByIdAsync(query.Id);
         }
-        public async Task<Company?> Handle(GetCompanyByNameQuery query)
+        public async Task<Companies?> Handle(GetCompanyByNameQuery query)
         {
             return await companyRepository.FindByNameAsync(query.Name);
         }
 
-        public async Task<Company?> Handle(GetCompanyByFkIdUserQuery query)
+        public async Task<Companies?> Handle(GetCompanyByFkIdUserQuery query)
         {
             return await companyRepository.FindByFkIdUserAsync(query.FkIdUser);
         }

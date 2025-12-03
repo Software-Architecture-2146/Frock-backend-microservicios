@@ -2,12 +2,14 @@
 using Frock_backend.shared.Infrastructure.Persistences.EFC.Configuration.Extensions;
 using Frock_backend.stops.Domain.Model.Aggregates;
 using Frock_backend.stops.Domain.Model.Aggregates.Geographic;
+using Frock_backend.stops.Domain.Model.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Frock_backend.shared.Infrastructure.Persistences.EFC.Configuration
 {
     public class AppDbContext(DbContextOptions options) : DbContext(options)
     {
+        public DbSet<Company> Companies { get; set; }
         protected override void OnConfiguring(DbContextOptionsBuilder builder)
         {
             builder.AddCreatedUpdatedInterceptor();
@@ -57,7 +59,9 @@ namespace Frock_backend.shared.Infrastructure.Persistences.EFC.Configuration
                 b.Property(f => f.FkIdCompany).IsRequired();
                 b.Property(f => f.FkIdDistrict).IsRequired();
             });
-
+            builder.Entity<Company>().ToTable("Companies");
+            builder.Entity<Company>().HasKey(c => c.Id);
+            builder.Entity<Company>().Property(c => c.Id).ValueGeneratedNever();
             builder.UseSnakeCaseNamingConvention();
         }
     }

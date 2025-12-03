@@ -10,6 +10,7 @@ using System.Net.Mime;
 
 using MassTransit;
 using Frock.Contracts;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Frock_backend.stops.Interfaces.REST
 {
@@ -19,6 +20,7 @@ namespace Frock_backend.stops.Interfaces.REST
     /// <param name="stopCommandService">The Stop Command Service</param>
     /// <param name="stopCommandServiceQueryService">The Stop Query Service</param>
     /// <param name="cloudinaryService">The Cloudinary Service</param>
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     [Produces(MediaTypeNames.Application.Json)]

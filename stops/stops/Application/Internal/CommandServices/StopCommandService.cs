@@ -18,10 +18,14 @@ namespace Frock_backend.stops.Application.Internal.CommandServices
     /// <see cref="IStopRepository">IStopRepository</see>
     /// ,
     /// <see cref="IUnitOfWork">IUnitOfWork</see>
-    public class StopCommandService(IStopRepository stopRepository, IUnitOfWork unitOfWork) : IStopCommandService
+    public class StopCommandService(IStopRepository stopRepository, ICompanyRepository companyRepository, IUnitOfWork unitOfWork, IGeoImportService geoImportService) : IStopCommandService
     {
         public async Task<Stop?> Handle(CreateStopCommand command)
         {
+            if (!await companyRepository.ExistsAsync(command.FkIdCompany))
+            {
+                throw new Exception($"La compañía con ID {command.FkIdCompany} no existe o no ha sido sincronizada aún.");
+            }
             var existingStop =
                 await stopRepository.FindByNameAndFkIdCompanyAsync(command.Name, command.FkIdCompany);
             // Note: The XML doc for IStopCommandService.Handle(CreateStopCommand) suggests an upsert behavior.

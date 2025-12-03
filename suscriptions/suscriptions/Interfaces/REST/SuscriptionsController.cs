@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using suscriptions.shared.Infrastructure.Persistence.EFC.Configuration; // Tu DbContext
-using Frock_backend.suscriptions.domain.model.aggregates; // Tu Entidad
+using Frock_backend.suscriptions.domain.model.aggregates;
+using Microsoft.AspNetCore.Authorization; // Tu Entidad
 
 namespace Frock_backend.suscriptions.Interfaces.REST 
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")] 
     public class SuscriptionsController : ControllerBase

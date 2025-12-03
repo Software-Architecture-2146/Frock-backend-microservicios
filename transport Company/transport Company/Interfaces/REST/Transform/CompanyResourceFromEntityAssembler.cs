@@ -6,7 +6,7 @@ namespace Frock_backend.transport_Company.Interfaces.REST.Transform
 {
     public static class CompanyResourceFromEntityAssembler
     {
-        public static CompanyResource ToResourceFromEntity(Company entity) =>
+        public static CompanyResource ToResourceFromEntity(Companies entity) =>
             new CompanyResource(
                 entity.Id,
                 entity.Name,

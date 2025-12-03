@@ -1,5 +1,5 @@
 using Frock.Contracts;
-using routes.Consumers; 
+using Frock_backend.routes.Consumers; 
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
@@ -20,10 +20,37 @@ using Frock_backend.shared.Infrastructure.Configuration;
 using Frock_backend.shared.Infrastructure.Services;
 using Frock_backend.routes.Domain.Repository;
 using Frock_backend.routes.Infrastructure.Repositories;
-
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using System.IdentityModel.Tokens.Jwt;
 
 var builder = WebApplication.CreateBuilder(args);
+// 1. Limpieza de Claims (Vital para leer el ID)
+JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
+// 2. Leer el secreto
+var secretKey = builder.Configuration["TokenSettings:Secret"] ?? "EstaEsUnaClaveSuperSecretaYMuyLargaParaFrockBackend2025";
+var key = Encoding.ASCII.GetBytes(secretKey);
+
+// 3. Configurar JWT
+builder.Services.AddAuthentication(x =>
+    {
+        x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(x =>
+    {
+        x.RequireHttpsMetadata = false;
+        x.SaveToken = true;
+        x.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(key),
+            ValidateIssuer = false,
+            ValidateAudience = false
+        };
+    });
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
 
 // Configure Kebab Case Route Naming Convention
@@ -113,6 +140,7 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
     builder.Services.AddScoped<IRouteCommandService, RouteCommandService>();
 builder.Services.AddScoped<IRouteQueryService, RouteQueryService>();
 builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
+builder.Services.AddScoped<IStopRepository, StopRepository>();
 //CORS
 builder.Services.AddCors(options =>
 {
@@ -146,7 +174,7 @@ using (var scope = app.Services.CreateScope())
 // Configure the HTTP request pipeline.
 app.UseSwagger(c =>
 {
-    c.OpenApiVersion = Microsoft.OpenApi.OpenApiSpecVersion.OpenApi2_0;
+ 
 });
 
 app.UseSwaggerUI(c =>
@@ -159,6 +187,7 @@ app.UseSwaggerUI(c =>
 
 app.UseHttpsRedirection();
 app.UseRouting(); // Si no está implícito
+app.UseAuthentication();
 app.UseAuthorization(); // Authorization de ASP.NET Core
 app.MapControllers();
 

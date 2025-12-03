@@ -5,7 +5,7 @@ using Frock_backend.routes.Domain.Repository;
 using Frock_backend.routes.Domain.Model.Entities;
 using Frock_backend.shared.Domain.Repositories;
 
-namespace routes.Consumers; 
+namespace Frock_backend.routes.Consumers; 
 
 public class TransportCompanyCreatedConsumer : IConsumer<ITransportCompanyCreated>
 {
@@ -45,7 +45,8 @@ public class TransportCompanyCreatedConsumer : IConsumer<ITransportCompanyCreate
             {
                 Id = message.Id,
                 Name = message.Name,
-                LastUpdated = DateTime.UtcNow
+                LastUpdated = DateTime.UtcNow,
+                UserId = message.UserId
             };
 
             // C. Guardamos en la base de datos

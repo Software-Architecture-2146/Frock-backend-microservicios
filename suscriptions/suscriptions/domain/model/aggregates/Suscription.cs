@@ -7,7 +7,7 @@ namespace Frock_backend.suscriptions.domain.model.aggregates
         public int Id { get; set; }
         
         // Esta es la clave: El ID de la empresa que viene de RabbitMQ
-        public Guid CompanyId { get; set; } 
+        public int CompanyId { get; set; } 
         
         public string PlanName { get; set; } // Ej: "Free", "Premium"
         public double Price { get; set; }
@@ -18,7 +18,7 @@ namespace Frock_backend.suscriptions.domain.model.aggregates
         public Suscription() { }
 
         // Constructor para crearla fácil
-        public Suscription(Guid companyId, string planName, double price)
+        public Suscription(int companyId, string planName, double price)
         {
             CompanyId = companyId;
             PlanName = planName;

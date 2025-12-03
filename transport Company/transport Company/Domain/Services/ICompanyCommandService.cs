@@ -5,8 +5,8 @@ namespace Frock_backend.transport_Company.Domain.Services
 {
     public interface ICompanyCommandService
     {
-        Task<Company?> Handle(CreateCompanyCommand command);
-        Task<Company?> Handle(UpdateCompanyCommand command);
-        Task<Company?> Handle(DeleteCompanyCommand command);
+        Task<Companies?> Handle(CreateCompanyCommand command);
+        Task<Companies?> Handle(UpdateCompanyCommand command);
+        Task<Companies?> Handle(DeleteCompanyCommand command);
     }
 }

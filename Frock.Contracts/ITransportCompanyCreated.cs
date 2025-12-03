@@ -4,8 +4,9 @@ namespace Frock.Contracts
 {
     public interface ITransportCompanyCreated
     {
-        Guid Id { get; }
+        int Id { get; }
         string Name { get; }
         DateTime CreatedAt { get; }
+        int UserId { get; }
     }
 }

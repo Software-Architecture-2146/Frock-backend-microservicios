@@ -70,9 +70,10 @@ namespace Frock_backend.transport_Company.Interfaces.REST
 
                 await publishEndpoint.Publish<ITransportCompanyCreated>(new
                 {
-                    Id = Guid.NewGuid(),
+                    Id = company.Id,
                     Name = company.Name,
-                    CreatedAt= DateTime.UtcNow
+                    CreatedAt= DateTime.UtcNow,
+                    UserId = company.FkIdUser
                 });
 
                 var companyResource = CompanyResourceFromEntityAssembler.ToResourceFromEntity(company);
