@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("routes")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4e10f49bf2aebf5f5e3f3ba86634cb6690764224")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+300c0452ad560ef7590d81e6978b84e2819e29fa")]
 [assembly: System.Reflection.AssemblyProductAttribute("routes")]
 [assembly: System.Reflection.AssemblyTitleAttribute("routes")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
